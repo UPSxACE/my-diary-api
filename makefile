@@ -2,6 +2,9 @@ BINARY_NAME=build
 TARGET=./
 ARGS=
 
+sqlc:
+	sqlc generate
+	
 dev:
 	go run . -dev
 

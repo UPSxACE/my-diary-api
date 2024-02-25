@@ -4,7 +4,8 @@ sql:
     queries: 
       - "sqlc/queries/note.sql"
       - "sqlc/queries/user.sql"
-    schema: "sqlc/schema.sql"
+      - "sqlc/queries/migrations.sql"
+    schema: "sqlc/final_schema.sql"
     gen:
       go:
         package: "db"
