@@ -60,10 +60,7 @@ func (s *Server) upgradeDatabase(devMode bool) {
 		}
 
 		fmt.Println("Checking migration " + migrationName + "...")
-		migration, err := s.Queries.FindOneMigration(s.dbContext, int32(migrationNumber))
-		if err != nil {
-			log.Fatal(err)
-		}
+		migration, _ := s.Queries.FindOneMigration(s.dbContext, int32(migrationNumber))
 		if migration.ID == 0 {
 			fmt.Println("Not applied yet.")
 			fmt.Println("Applying migration " + migrationName + "...")
