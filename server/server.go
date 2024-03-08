@@ -27,7 +27,8 @@ func NewServer(devMode bool) *Server {
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"http://localhost:1323", "http://localhost:3000"},
-		AllowHeaders: []string{"*"},
+		AllowHeaders: []string{"Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers"},
+		AllowCredentials: true,
 		// echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept
 	}))
 
