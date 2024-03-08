@@ -36,27 +36,40 @@ func (s *Server) postLoginRoute(c echo.Context) error {
 	if(!match){
 		return echo.ErrBadRequest;
 	}
+
 	
 	// Set claims
+	issuedAt := time.Now()
+	expiresAt := time.Now().Add(TOKEN_DURATION)
 	claims := jwtCustomClaims{
+		userAuth.Username,
 		int(userAuth.ID),
 		int(userAuth.RoleID),
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TOKEN_DURATION)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+			IssuedAt:  jwt.NewNumericDate(issuedAt),
 		},
 	}
 
 	// Create token with claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	// Generate encoded token and send it as response.
+	// Generate encoded token and to send as response.
 	signedJwt, err := token.SignedString(s.jwtConfig.SigningKey)
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{"authToken": signedJwt})
+	// Set authToken cookie
+	cookie := new(http.Cookie);
+	cookie.Name = "authToken"
+	cookie.Value = signedJwt
+	cookie.Expires = expiresAt
+	cookie.HttpOnly = true
+	cookie.Path = "/"
+	c.SetCookie(cookie)
+
+	return c.NoContent(http.StatusOK)
 }
 
 func (s *Server) postRegisterRoute(c echo.Context) error {
@@ -100,24 +113,35 @@ func (s *Server) postRegisterRoute(c echo.Context) error {
 	}
 
 	// Set claims
+	issuedAt := time.Now()
+	expiresAt := time.Now().Add(TOKEN_DURATION)
 	claims := jwtCustomClaims{
+		params.Username,
 		int(id),
 		USER_DEFAULT_PERMISSIONS,
 		jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(time.Now().Add(TOKEN_DURATION)),
-			IssuedAt:  jwt.NewNumericDate(time.Now()),
+			ExpiresAt: jwt.NewNumericDate(expiresAt),
+			IssuedAt:  jwt.NewNumericDate(issuedAt),
 		},
 	}
 
 	// Create token with claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	// Generate encoded token and send it as response.
+	// Generate encoded token and to send as response.
 	signedJwt, err := token.SignedString(s.jwtConfig.SigningKey)
 	if err != nil {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, echo.Map{"authToken": signedJwt})
+	// Set authToken cookie
+	cookie := new(http.Cookie);
+	cookie.Name = "authToken"
+	cookie.Value = signedJwt
+	cookie.Expires = expiresAt
+	cookie.HttpOnly = true
+	cookie.Path = "/"
+	c.SetCookie(cookie)
 
+	return c.NoContent(http.StatusOK)
 }
