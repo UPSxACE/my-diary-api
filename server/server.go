@@ -39,7 +39,7 @@ func NewServer(devMode bool) *Server {
 	server.setupDatabase(devMode)
 	server.upgradeDatabase(devMode)
 	server.setupJwt()
-	server.setRoutes()
+	server.setRoutes(devMode)
 
 	return server
 }

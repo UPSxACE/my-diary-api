@@ -2,7 +2,7 @@ package server
 
 import "github.com/labstack/echo/v4"
 
-func (s *Server) setRoutes() {
+func (s *Server) setRoutes(devMode bool) {
 	// Public Routes
 	s.router.GET("/ping", func(c echo.Context) error {
 		return c.JSON(200,"pong");
@@ -15,8 +15,13 @@ func (s *Server) setRoutes() {
 
 	// Private Routes
 	routeIndexPrivate := s.router.Group("/", s.jwtMiddleware)
-	routeIndexPrivate.POST("blacklist-token", s.postBlacklistTokenRoute)
-	routeIndexPrivate.GET("test-token", s.getTestTokenRoute)
+	routeIndexPrivate.GET("profile", s.getProfileRoute)
+	if(devMode){
+		routeIndexPrivate.POST("blacklist-token", s.postBlacklistTokenRoute)
+		routeIndexPrivate.GET("test-token", s.getTestTokenRoute)
+	}
+	
+	
 
 	// Moderation Routes
 }
