@@ -65,7 +65,7 @@ COMMENT ON TABLE public.user_tutorial IS 'Table that stores whether or not an us
 
 CREATE TABLE public.note (
 	id int4 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1 MAXVALUE 2147483647 START 1 CACHE 1 NO CYCLE) NOT NULL,
-	author_id int4 NULL,
+	author_id int4 NOT NULL,
 	title varchar(254) NOT NULL,
 	"content" varchar(131070) NOT NULL,
 	content_raw varchar(131070) NOT NULL,

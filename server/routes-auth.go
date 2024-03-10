@@ -72,15 +72,16 @@ func (s *Server) postLoginRoute(c echo.Context) error {
 	return c.NoContent(http.StatusOK)
 }
 
-func (s *Server) postRegisterRoute(c echo.Context) error {
-	type Register struct {
-		Username string `json:"username" validate:"required,username"`
-		Name     string `json:"name" validate:"required,min=4,max=64,alphanumspace"`
-		Email    string `json:"email" validate:"required,email"`
-		Password string `json:"password" validate:"required,password"`
-	}
+type PostRegisterBody struct {
+	Username string `json:"username" validate:"required,username"`
+	Name     string `json:"name" validate:"required,min=4,max=64,alphanumspace"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required,password"`
+}
 
-	register := &Register{}
+func (s *Server) postRegisterRoute(c echo.Context) error {
+	// Read body
+	register := &PostRegisterBody{}
 
 	if err := c.Bind(register); err != nil {
 		return echo.ErrBadRequest
@@ -143,5 +144,5 @@ func (s *Server) postRegisterRoute(c echo.Context) error {
 	cookie.Path = "/"
 	c.SetCookie(cookie)
 
-	return c.NoContent(http.StatusOK)
+	return c.NoContent(http.StatusCreated)
 }
