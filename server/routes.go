@@ -1,6 +1,11 @@
 package server
 
 import "github.com/labstack/echo/v4"
+type Pagination struct {
+	TotalRecords int    `json:"total_records"`
+	PageSize     int    `json:"page_size"`
+	Cursor       string `json:"cursor"`
+}
 
 func (s *Server) setRoutes(devMode bool) {
 	// Public Routes
