@@ -1,6 +1,7 @@
 package server
 
 import "github.com/labstack/echo/v4"
+
 type Pagination struct {
 	TotalRecords int    `json:"total_records"`
 	PageSize     int    `json:"page_size"`
@@ -11,7 +12,7 @@ func (s *Server) setRoutes(devMode bool) {
 	// Public Routes
 	// - Index
 	s.router.GET("/ping", func(c echo.Context) error {
-		return c.JSON(200,"pong");
+		return c.JSON(200, "pong")
 	})
 
 	// Guest Routes
@@ -25,12 +26,13 @@ func (s *Server) setRoutes(devMode bool) {
 	// - Index
 	routeIndexPrivate.GET("profile", s.getProfileRoute)
 	// - Test
-	if(devMode){
+	if devMode {
 		routeIndexPrivate.POST("blacklist-token", s.postBlacklistTokenRoute)
 		routeIndexPrivate.GET("test-token", s.getTestTokenRoute)
 	}
 	// - Notes
 	routeNotePrivate := s.router.Group("/notes", s.jwtMiddleware)
+	routeNotePrivate.GET("", s.getNotesRoute)
 	routeNotePrivate.POST("", s.postNotesRoute)
 
 	// Moderation Routes
