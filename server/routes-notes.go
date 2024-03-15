@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -43,7 +44,14 @@ func (s *Server) getNotesRoute(c echo.Context) error {
 		Limit:    NOTES_PG_SIZE + 1,
 	}
 
-	// Optional parameter "cursorParam"
+	// Optional parameter "search"
+	searchParam := c.QueryParam("search")
+	if searchParam != "" {
+		p.Search = true
+		p.SearchValue = searchParam
+	}
+
+	// Optional parameter "cursor"
 	cursorParam := c.QueryParam("cursor")
 	var decodedCursor utils.Cursor
 	var decodedCursorTime time.Time
@@ -114,6 +122,7 @@ func (s *Server) getNotesRoute(c echo.Context) error {
 	// Fetch
 	noteModels, err := s.Queries.ListNotes(context.Background(), p)
 	if err != nil {
+		fmt.Println(err)
 		return echo.ErrInternalServerError
 	}
 
