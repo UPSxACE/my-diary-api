@@ -9,9 +9,9 @@ WHERE author_id = $1 AND deleted = false
     AND (CASE WHEN @cursor_title_asc::bool THEN (title, note.id) >= ($3, sqlc.arg('CursorID')::int) ELSE TRUE END)
     AND (CASE WHEN @cursor_title_desc::bool THEN (title, note.id) <= ($3, sqlc.arg('CursorID')::int) ELSE TRUE END)
     AND (CASE WHEN @search::bool THEN
-        (title LIKE CONCAT('%', sqlc.arg('SearchValue')::text, '%'))
+        (LOWER(title) LIKE LOWER(CONCAT('%', sqlc.arg('SearchValue')::text, '%')))
         OR
-        (content_raw LIKE CONCAT('%', sqlc.arg('SearchValue')::text, '%'))
+        (LOWER(content_raw) LIKE LOWER(CONCAT('%', sqlc.arg('SearchValue')::text, '%')))
         ELSE TRUE END)
 ORDER BY
     CASE WHEN @order_crt_asc::bool THEN created_at END ASC,
