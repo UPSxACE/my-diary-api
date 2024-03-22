@@ -1,6 +1,11 @@
 -- name: CountNotes :one
 SELECT COUNT(*) FROM note WHERE author_id = $1 AND deleted = false;
 
+-- name: GetNoteById :one
+SELECT sqlc.embed(u), sqlc.embed(n) FROM note n
+INNER JOIN "user" u ON u.id = n.author_id
+WHERE n.id = $1 AND n.deleted = false;
+
 -- name: ListNotes :many
 SELECT id, author_id, title, content, content_raw, views, lastread_at, created_at FROM note
 WHERE author_id = $1 AND deleted = false

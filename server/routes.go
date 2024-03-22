@@ -34,6 +34,7 @@ func (s *Server) setRoutes(devMode bool) {
 	routeNotePrivate := s.router.Group("/notes", s.jwtMiddleware)
 	routeNotePrivate.GET("", s.getNotesRoute)
 	routeNotePrivate.POST("", s.postNotesRoute)
+	routeNotePrivate.GET("/:id", s.getNotesIdRoute)
 
 	// Moderation Routes
 }

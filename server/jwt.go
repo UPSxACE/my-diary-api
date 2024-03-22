@@ -13,9 +13,9 @@ const TOKEN_DURATION = time.Hour * 72
 
 /** JWT custom claim */
 type jwtCustomClaims struct {
-	Username string `json:"username"`
-	UserId      int `json:"userId"`
-	Permissions int `json:"permissions"`
+	Username    string `json:"username"`
+	UserId      int    `json:"userId"`
+	Permissions int    `json:"permissions"`
 	jwt.RegisteredClaims
 }
 
@@ -27,7 +27,7 @@ type sessionRevokeList = map[userId]revokeTime
 func (s *Server) setupJwt() {
 	SECRET := os.Getenv("JWT_SECRET")
 	s.jwtConfig = echojwt.Config{
-		TokenLookup: "cookie:authToken",
+		TokenLookup: "cookie:authToken,query:authToken",
 		NewClaimsFunc: func(c echo.Context) jwt.Claims {
 			return new(jwtCustomClaims)
 		},

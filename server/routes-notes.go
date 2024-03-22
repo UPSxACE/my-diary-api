@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/UPSxACE/my-diary-api/db"
@@ -17,14 +18,36 @@ import (
 const NOTES_PG_SIZE = 16
 
 type GetNotesBody struct {
-	Pagination Pagination `json:"pagination"`
-	Data       any        `json:"data"`
+	Pagination Pagination        `json:"pagination"`
+	Data       []db.ListNotesRow `json:"data"`
 }
 
 type PostNotesBody struct {
 	Title      string `json:"title" validate:"required,max=254"`
 	Content    string `json:"content" validate:"required,max=131070"`
 	ContentRaw string `json:"content_raw" validate:"required,max=131070"`
+}
+
+type NoteDtoAuthor struct {
+	ID        int32  `json:"id"`
+	Username  string `json:"username"`
+	AvatarUrl string `json:"avatar_url"`
+}
+
+type NoteDtoNote struct {
+	ID         int32            `json:"id"`
+	Title      string           `json:"title"`
+	Content    string           `json:"content"`
+	ContentRaw string           `json:"content_raw"`
+	Views      int32            `json:"views"`
+	LastreadAt pgtype.Timestamp `json:"lastread_at"`
+	CreatedAt  pgtype.Timestamp `json:"created_at"`
+	UpdatedAt  pgtype.Timestamp `json:"updated_at"`
+}
+
+type NoteDto struct {
+	Author NoteDtoAuthor `json:"author"`
+	Note   NoteDtoNote   `json:"note"`
 }
 
 func (s *Server) getNotesRoute(c echo.Context) error {
@@ -159,6 +182,49 @@ func (s *Server) getNotesRoute(c echo.Context) error {
 		Pagination: pagination,
 		Data:       noteModels,
 	})
+}
+
+func (s *Server) getNotesIdRoute(c echo.Context) error {
+	token := c.Get("user").(*jwt.Token)
+	claims := token.Claims.(*jwtCustomClaims)
+
+	jwtId := claims.UserId
+	jwtPerms := claims.Permissions
+
+	idParam := c.Param("id")
+
+	idParamInt, err := strconv.Atoi(idParam)
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+
+	noteModel, err := s.Queries.GetNoteById(c.Request().Context(), int32(idParamInt))
+	if err != nil {
+		return echo.ErrNotFound
+	}
+	if noteModel.Note.AuthorID != int32(jwtId) && jwtPerms != 1 {
+		return echo.ErrNotFound
+	}
+
+	noteDto := NoteDto{
+		Author: NoteDtoAuthor{
+			ID:        noteModel.Note.AuthorID,
+			Username:  noteModel.User.Username,
+			AvatarUrl: noteModel.User.AvatarUrl.String,
+		},
+		Note: NoteDtoNote{
+			ID:         noteModel.Note.ID,
+			Title:      noteModel.Note.Title,
+			Content:    noteModel.Note.Content,
+			ContentRaw: noteModel.Note.ContentRaw,
+			Views:      noteModel.Note.Views,
+			LastreadAt: noteModel.Note.LastreadAt,
+			CreatedAt:  noteModel.Note.CreatedAt,
+			UpdatedAt:  noteModel.Note.UpdatedAt,
+		},
+	}
+
+	return c.JSON(http.StatusOK, noteDto)
 }
 
 func (s *Server) postNotesRoute(c echo.Context) error {
