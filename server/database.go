@@ -11,8 +11,8 @@ import (
 
 	"github.com/UPSxACE/my-diary-api/db"
 	"github.com/UPSxACE/my-diary-api/utils"
-	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func (s *Server) setupDatabase(devMode bool) {
@@ -30,12 +30,21 @@ func (s *Server) setupDatabase(devMode bool) {
 	}
 
 	ctx := context.Background()
-	conn, err := pgx.Connect(ctx, connectionString)
+
+	config, err := pgxpool.ParseConfig(connectionString)
+	if err != nil {
+		log.Fatal(err)
+	}
+	config.MinConns = 1
+	config.MaxConns = 5
+	config.MaxConnIdleTime = 10 * time.Second // REVIEW: find ideal amount of time
+
+	pool, err := pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	s.db = conn
+	s.db = pool
 	s.dbContext = ctx
 	s.Queries = db.New(s.db)
 }

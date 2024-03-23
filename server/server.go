@@ -5,7 +5,7 @@ import (
 
 	"github.com/UPSxACE/my-diary-api/db"
 	"github.com/go-playground/validator/v10"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	echojwt "github.com/labstack/echo-jwt/v4"
 
 	"github.com/labstack/echo/v4"
@@ -14,7 +14,7 @@ import (
 
 type Server struct {
 	router         *echo.Echo
-	db             *pgx.Conn
+	db             *pgxpool.Pool
 	dbContext      context.Context
 	Queries        *db.Queries
 	tokenBlacklist sessionRevokeList
@@ -47,6 +47,6 @@ func NewServer(devMode bool) *Server {
 }
 
 func (s *Server) Start(address string) error {
-	defer s.db.Close(s.dbContext)
+	defer s.db.Close()
 	return s.router.Start(address)
 }
