@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -26,6 +27,7 @@ func (s *Server) getProfileRoute(c echo.Context) error {
 
 	profileModel, err := s.Queries.GetUserProfileById(c.Request().Context(), int32(jwtId))
 	if err != nil {
+		fmt.Println(err)
 		return echo.ErrInternalServerError
 	}
 

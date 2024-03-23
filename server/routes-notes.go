@@ -28,6 +28,12 @@ type PostNotesBody struct {
 	ContentRaw string `json:"content_raw" validate:"required,max=131070"`
 }
 
+type PutNotesBody struct {
+	Title      string `json:"title" validate:"max=254"`
+	Content    string `json:"content" validate:"max=131070"`
+	ContentRaw string `json:"content_raw" validate:"max=131070"`
+}
+
 type NoteDtoAuthor struct {
 	ID        int32  `json:"id"`
 	Username  string `json:"username"`
@@ -59,6 +65,7 @@ func (s *Server) getNotesRoute(c echo.Context) error {
 
 	noteCount, err := s.Queries.CountNotes(c.Request().Context(), int32(jwtId))
 	if err != nil {
+		fmt.Println(err)
 		return echo.ErrInternalServerError
 	}
 
@@ -157,6 +164,7 @@ func (s *Server) getNotesRoute(c echo.Context) error {
 		if nextCursorIsTime {
 			nextCursorMainByte, err := noteModels[modelCount-1].CreatedAt.Time.MarshalText()
 			if err != nil {
+				fmt.Println(err)
 				return echo.ErrInternalServerError
 			}
 			nextCursor = utils.EncodeCursor(noteModels[modelCount-1].ID, string(nextCursorMainByte), "datetime")
@@ -227,6 +235,75 @@ func (s *Server) getNotesIdRoute(c echo.Context) error {
 	return c.JSON(http.StatusOK, noteDto)
 }
 
+func (s *Server) putNotesIdRoute(c echo.Context) error {
+	token := c.Get("user").(*jwt.Token)
+	claims := token.Claims.(*jwtCustomClaims)
+
+	jwtId := claims.UserId
+	jwtPerms := claims.Permissions
+
+	idParam := c.Param("id")
+
+	idParamInt, err := strconv.Atoi(idParam)
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+
+	noteModel, err := s.Queries.GetNoteById(c.Request().Context(), int32(idParamInt))
+	if err != nil {
+		return echo.ErrNotFound
+	}
+	if noteModel.Note.AuthorID != int32(jwtId) && jwtPerms != 1 {
+		return echo.ErrNotFound
+	}
+
+	// Read body
+	noteBody := &PutNotesBody{}
+
+	if err := c.Bind(noteBody); err != nil {
+		return echo.ErrBadRequest
+	}
+
+	// Validate fields
+	err = s.validator.Struct(noteBody)
+	if err != nil {
+		errs := err.(validator.ValidationErrors)
+		if len(errs) > 0 {
+			return c.JSON(http.StatusBadRequest, echo.Map{"field": errs[0].Field()})
+		}
+	}
+
+	// Save
+	// TODO: Transaction
+	// TODO: Register note_change(?)
+	params := db.UpdateNoteParams{
+		ID: int32(idParamInt),
+	}
+	if noteBody.Title != "" {
+		params.Title = noteBody.Title
+	} else {
+		params.Title = noteModel.Note.Title
+	}
+	if noteBody.Content != "" {
+		params.Content = noteBody.Content
+	} else {
+		params.Content = noteModel.Note.Content
+	}
+	if noteBody.ContentRaw != "" {
+		params.ContentRaw = noteBody.ContentRaw
+	} else {
+		params.ContentRaw = noteModel.Note.ContentRaw
+	}
+
+	err = s.Queries.UpdateNote(c.Request().Context(), params)
+	if err != nil {
+		fmt.Println(err)
+		return echo.ErrInternalServerError
+	}
+
+	return c.NoContent(200)
+}
+
 func (s *Server) postNotesRoute(c echo.Context) error {
 	token := c.Get("user").(*jwt.Token)
 	claims := token.Claims.(*jwtCustomClaims)
@@ -256,6 +333,7 @@ func (s *Server) postNotesRoute(c echo.Context) error {
 
 	id, err := s.Queries.CreateNote(c.Request().Context(), params)
 	if err != nil {
+		fmt.Println(err)
 		return echo.ErrInternalServerError
 	}
 

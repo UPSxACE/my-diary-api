@@ -33,3 +33,11 @@ LIMIT $4;
 INSERT INTO note(author_id, title, "content", content_raw, created_at)
 VALUES($1, $2, $3, $4, NOW())
 RETURNING id;
+
+-- name: UpdateNote :exec
+UPDATE note SET
+title = $1,
+"content" = $2,
+content_raw = $3,
+updated_at = NOW()
+WHERE id = $4 AND deleted = false;

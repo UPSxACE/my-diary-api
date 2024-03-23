@@ -35,6 +35,7 @@ func (s *Server) setRoutes(devMode bool) {
 	routeNotePrivate.GET("", s.getNotesRoute)
 	routeNotePrivate.POST("", s.postNotesRoute)
 	routeNotePrivate.GET("/:id", s.getNotesIdRoute)
+	routeNotePrivate.PUT("/:id", s.putNotesIdRoute)
 
 	// Moderation Routes
 }

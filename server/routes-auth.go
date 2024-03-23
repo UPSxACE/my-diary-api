@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 
@@ -29,15 +30,14 @@ func (s *Server) postLoginRoute(c echo.Context) error {
 
 	userAuth, err := s.Queries.GetUserAuthByUsername(c.Request().Context(), login.Username)
 	if err != nil {
-		return echo.ErrNotFound;
-	}
-	
-	match, _ := ComparePasswordAndHash(login.Password, userAuth.Password);
-	if(!match){
-		return echo.ErrBadRequest;
+		return echo.ErrNotFound
 	}
 
-	
+	match, _ := ComparePasswordAndHash(login.Password, userAuth.Password)
+	if !match {
+		return echo.ErrBadRequest
+	}
+
 	// Set claims
 	issuedAt := time.Now()
 	expiresAt := time.Now().Add(TOKEN_DURATION)
@@ -61,7 +61,7 @@ func (s *Server) postLoginRoute(c echo.Context) error {
 	}
 
 	// Set authToken cookie
-	cookie := new(http.Cookie);
+	cookie := new(http.Cookie)
 	cookie.Name = "authToken"
 	cookie.Value = signedJwt
 	cookie.Expires = expiresAt
@@ -99,6 +99,7 @@ func (s *Server) postRegisterRoute(c echo.Context) error {
 	// Save
 	hashedPassword, err := HashPassword(register.Password)
 	if err != nil {
+		fmt.Println(err)
 		return echo.ErrInternalServerError
 	}
 
@@ -110,6 +111,7 @@ func (s *Server) postRegisterRoute(c echo.Context) error {
 	params := db.CreateUserParams{Username: register.Username, Email: register.Email, FullName: *namePg, AvatarUrl: *urlPg, RoleID: USER_DEFAULT_ROLE_ID, Password: hashedPassword}
 	id, err := s.Queries.CreateUser(c.Request().Context(), params)
 	if err != nil {
+		fmt.Println(err)
 		return echo.ErrInternalServerError
 	}
 
@@ -136,7 +138,7 @@ func (s *Server) postRegisterRoute(c echo.Context) error {
 	}
 
 	// Set authToken cookie
-	cookie := new(http.Cookie);
+	cookie := new(http.Cookie)
 	cookie.Name = "authToken"
 	cookie.Value = signedJwt
 	cookie.Expires = expiresAt
