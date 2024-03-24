@@ -1,7 +1,7 @@
 -- name: ListUser :many
 SELECT * FROM "user" ORDER BY id ASC;
 -- name: CreateUser :one
-INSERT INTO public."user"(username, password, email, avatar_url, full_name, created_at, role_id)
+INSERT INTO "user"(username, password, email, avatar_url, full_name, created_at, role_id)
 VALUES($1, $2, $3, $4, $5, NOW(), $6)
 RETURNING id;
 -- name: GetUserAuthByUsername :one

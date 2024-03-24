@@ -9,13 +9,13 @@ type Pagination struct {
 }
 
 func (s *Server) setRoutes(devMode bool) {
-	// Public Routes
+	// SECTION - Public Routes
 	// - Index
 	s.router.GET("/ping", func(c echo.Context) error {
 		return c.JSON(200, "pong")
 	})
 
-	// Guest Routes
+	// SECTION - Guest Routes
 	routeIndexGuest := s.router.Group("/", s.guestMiddleware)
 	// - Auth
 	routeIndexGuest.POST("login", s.postLoginRoute)
@@ -36,6 +36,7 @@ func (s *Server) setRoutes(devMode bool) {
 	routeNotePrivate.POST("", s.postNotesRoute)
 	routeNotePrivate.GET("/:id", s.getNotesIdRoute)
 	routeNotePrivate.PUT("/:id", s.putNotesIdRoute)
+	routeNotePrivate.DELETE("/:id", s.deleteNotesIdRoute)
 
-	// Moderation Routes
+	// SECTION - Moderation Routes
 }

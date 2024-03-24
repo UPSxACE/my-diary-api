@@ -304,6 +304,37 @@ func (s *Server) putNotesIdRoute(c echo.Context) error {
 	return c.NoContent(200)
 }
 
+func (s *Server) deleteNotesIdRoute(c echo.Context) error {
+	token := c.Get("user").(*jwt.Token)
+	claims := token.Claims.(*jwtCustomClaims)
+
+	jwtId := claims.UserId
+	jwtPerms := claims.Permissions
+
+	idParam := c.Param("id")
+
+	idParamInt, err := strconv.Atoi(idParam)
+	if err != nil {
+		return echo.ErrBadRequest
+	}
+
+	noteModel, err := s.Queries.GetNoteById(c.Request().Context(), int32(idParamInt))
+	if err != nil {
+		return echo.ErrNotFound
+	}
+	if noteModel.Note.AuthorID != int32(jwtId) && jwtPerms != 1 {
+		return echo.ErrNotFound
+	}
+
+	err = s.Queries.DeleteNote(c.Request().Context(), noteModel.Note.ID)
+	if err != nil {
+		fmt.Println(err)
+		return echo.ErrInternalServerError
+	}
+
+	return c.NoContent(200)
+}
+
 func (s *Server) postNotesRoute(c echo.Context) error {
 	token := c.Get("user").(*jwt.Token)
 	claims := token.Claims.(*jwtCustomClaims)

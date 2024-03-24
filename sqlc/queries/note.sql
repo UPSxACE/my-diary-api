@@ -41,3 +41,9 @@ title = $1,
 content_raw = $3,
 updated_at = NOW()
 WHERE id = $4 AND deleted = false;
+
+-- name: DeleteNote :exec
+UPDATE note SET
+deleted = true,
+deleted_at = NOW()
+WHERE id = $1 AND deleted = false;
