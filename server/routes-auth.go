@@ -41,10 +41,16 @@ func (s *Server) postLoginRoute(c echo.Context) error {
 	// Set claims
 	issuedAt := time.Now()
 	expiresAt := time.Now().Add(TOKEN_DURATION)
+
+	permissions := 0
+	if userAuth.RoleID == 2 {
+		permissions = 1
+	}
+
 	claims := jwtCustomClaims{
 		userAuth.Username,
 		int(userAuth.ID),
-		int(userAuth.RoleID),
+		permissions,
 		jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expiresAt),
 			IssuedAt:  jwt.NewNumericDate(issuedAt),
@@ -108,7 +114,14 @@ func (s *Server) postRegisterRoute(c echo.Context) error {
 	urlPg := &pgtype.Text{}
 	urlPg.Scan(USER_DEFAULT_AVATAR_URL) // NOTE: not error checking
 
-	params := db.CreateUserParams{Username: register.Username, Email: register.Email, FullName: *namePg, AvatarUrl: *urlPg, RoleID: USER_DEFAULT_ROLE_ID, Password: hashedPassword}
+	params := db.CreateUserParams{
+		Username:  register.Username,
+		Email:     register.Email,
+		FullName:  *namePg,
+		AvatarUrl: *urlPg,
+		RoleID:    USER_DEFAULT_ROLE_ID,
+		Password:  hashedPassword,
+	}
 	id, err := s.Queries.CreateUser(c.Request().Context(), params)
 	if err != nil {
 		fmt.Println(err)

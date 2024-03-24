@@ -35,7 +35,7 @@ CREATE TABLE public."user" (
 	CONSTRAINT user_pk PRIMARY KEY (id),
 	CONSTRAINT user_unique UNIQUE (username),
 	CONSTRAINT user_unique_1 UNIQUE (email),
-	CONSTRAINT user_role_fk FOREIGN KEY (id) REFERENCES public."role"(id)
+	CONSTRAINT user_role_fk FOREIGN KEY (role_id) REFERENCES public."role"(id)
 );
 COMMENT ON TABLE public."user" IS 'Table to store user accounts';
 
