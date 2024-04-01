@@ -11,6 +11,7 @@ Other repos related to the project:
 
 ## Table of Contents
 - [Development Prerequisites](#development-prerequisites)
+- [Installation and Setup](#installation-and-setup)
 
 ## Development Prerequisites
 Ensure you have the following tools and dependencies installed on your system before diving into MyDiary Api development:
