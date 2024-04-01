@@ -39,7 +39,7 @@ go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
 sqlc generate
 ```
 
-### Create .env file in the root of the project
+### Create .env file at the root of the project
 ```env
 CORS_ORIGIN_1=<URL USED FOR THE WEB APP>
 CORS_ORIGIN_2=<URL USED FOR THE API APP>
