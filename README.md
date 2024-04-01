@@ -17,6 +17,7 @@ Ensure you have the following tools and dependencies installed on your system be
 * Go
 * Makefile
 * Postgres
+* Run the sql queries in `sqlc/initial_schema.sql`
 
 ## Installation and Setup
 ### Clone repository
